@@ -48,4 +48,17 @@ public class UsersController : ControllerBase
         _repo.Save();
         return NoContent();
     }
+
+    [HttpGet("group/{groupId}")]
+    public IActionResult GetUsersByGroup(int groupId)
+    {
+        var usersInGroup = _repo.Users
+            .Where(u => u.Groups.Any(g => g.Id == groupId))
+            .ToList();
+
+        if (!usersInGroup.Any())
+            return NotFound();
+
+        return Ok(usersInGroup);
+    }
 }

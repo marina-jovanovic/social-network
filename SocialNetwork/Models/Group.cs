@@ -2,13 +2,13 @@
 {
     public class Group
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public DateTime CreationDate { get; set; }
 
-        public List<User> Users { get; set; } = new List<User>();
-
-        public Group (string name, DateTime creationDate)
+        public Group (int id, string name, DateTime creationDate)
         {
+            Id = id;
             Name = name;
             CreationDate = creationDate;
         }
