@@ -1,4 +1,3 @@
-
 namespace SocialNetwork
 {
     public class Program
@@ -7,10 +6,22 @@ namespace SocialNetwork
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // Dodavanje CORS servisa
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    policy =>
+                    {
+                        policy.AllowAnyOrigin()
+                              .AllowAnyMethod()
+                              .AllowAnyHeader();
+                    });
+            });
 
+            // Dodaj servise za kontrolere
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+            // Swagger/OpenAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -23,8 +34,10 @@ namespace SocialNetwork
                 app.UseSwaggerUI();
             }
 
-            app.UseAuthorization();
+            // Omoguæavanje CORS
+            app.UseCors("AllowAll");
 
+            app.UseAuthorization();
 
             app.MapControllers();
 
