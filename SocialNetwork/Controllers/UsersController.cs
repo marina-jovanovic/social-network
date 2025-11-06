@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Models;
+using Microsoft.Data.Sqlite;
 
 [ApiController]
 [Route("users")]
 public class UsersController : ControllerBase
 {
     private readonly UserRepository _repo;
+    private string _connectionString = "Data Source=database/database.db";
 
     public UsersController()
     {
@@ -16,7 +18,48 @@ public class UsersController : ControllerBase
     [HttpGet]
     public IActionResult GetAllUsers()
     {
-        return Ok(_repo.Users);
+        try
+        {
+            var users = GetAllFromDatabase();
+            return Ok(users);
+        }
+        catch (SqliteException ex)
+        {
+            Console.WriteLine("SQLite error: " + ex.Message);
+            return StatusCode(500, "Database error");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("General error: " + ex.Message);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    private List<User> GetAllFromDatabase()
+    {
+        var users = new List<User>();
+
+        using SqliteConnection connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        string query = "SELECT Id, Username, Name, Surname, Birthday FROM Users";
+
+        using var command = new SqliteCommand(query, connection);
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            var user = new User
+            {
+                Id = reader.GetInt32(0),
+                Name = reader.GetString(2),
+                Surname = reader.GetString(3),
+                DateOfBirth = DateTime.Parse(reader.GetString(4))
+            };
+            users.Add(user);
+        }
+
+        return users;
     }
 
     [HttpGet("{id}")]

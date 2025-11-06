@@ -8,6 +8,8 @@
 
         public DateTime DateOfBirth { get; set; }
 
+        public User() { }
+
         public List<Group> Groups { get; set; } = new List<Group>();
 
         public User (int id, string name, string surname, DateTime dateOfBirth)
