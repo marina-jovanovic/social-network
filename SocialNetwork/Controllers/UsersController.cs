@@ -64,25 +64,60 @@ public class UsersController : ControllerBase
     [HttpPost]
     public IActionResult CreateUser([FromBody] User user)
     {
-        _repo.Users.Add(user);
-        _repo.Save();
-        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        try
+        {
+            var createdUser = _dbRepo.Create(user);
+            return CreatedAtAction(nameof(GetUser), new { id = createdUser.Id }, createdUser);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error during user creation: " + ex.Message);
+            return StatusCode(500, "Internal server error during creation");
+        }
     }
 
     [HttpPut("{id}")]
     public IActionResult UpdateUser(int id, [FromBody] User updatedUser)
     {
-        var user = _repo.Users.FirstOrDefault(u => u.Id == id);
+        try
+        {
+            updatedUser.Id = id;
 
-        if (user == null) return NotFound();
+            bool updated = _dbRepo.Update(updatedUser);
 
-        user.Name = updatedUser.Name;
-        user.Surname = updatedUser.Surname;
-        user.DateOfBirth = updatedUser.DateOfBirth;
+            if (!updated)
+            {
+                return NotFound();
+            }
 
-        _repo.Save();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during user update {id}: " + ex.Message);
+            return StatusCode(500, "Internal server error during update");
+        }
+    }
 
-        return NoContent();
+    [HttpDelete("{id}")]
+    public IActionResult DeleteUser(int id)
+    {
+        try
+        {
+            bool deleted = _dbRepo.Delete(id);
+
+            if (!deleted)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during user deletion {id}: " + ex.Message);
+            return StatusCode(500, "Internal server error during deletion");
+        }
     }
 
     [HttpGet("group/{groupId}")]

@@ -68,5 +68,68 @@ namespace SocialNetwork.Repositories
                 return null;
             }
         }
+
+        public User Create(User user)
+        {
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            string query = @"INSERT INTO Users (Username, Name, Surname, Birthday)
+                            VALUES (@username, @name, @surname, @birthday);
+                            SELECT LAST_INSERT_ROWID()";
+
+            using SqliteCommand command = new SqliteCommand(query, connection);
+
+            command.Parameters.AddWithValue("@username", $"{user.Name.ToLower()}_{user.Surname.ToLower()}");
+            command.Parameters.AddWithValue("@name", user.Name);
+            command.Parameters.AddWithValue("@surname", user.Surname);
+            command.Parameters.AddWithValue("@birthday", user.DateOfBirth.ToString("yyyy-MM-dd"));
+
+            object result = command.ExecuteScalar();
+
+            if (result != null)
+            {
+                user.Id = Convert.ToInt32(result);
+            }
+
+            return user;
+        }
+
+        public bool Update(User user)
+        {
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            string query = @"UPDATE Users 
+                         SET Name = @name, Surname = @surname, Birthday = @birthday 
+                         WHERE Id = @id";
+
+            using SqliteCommand command = new SqliteCommand(query, connection);
+
+            command.Parameters.AddWithValue("@name", user.Name);
+            command.Parameters.AddWithValue("@surname", user.Surname);
+            command.Parameters.AddWithValue("@birthday", user.DateOfBirth.ToString("yyyy-MM-dd"));
+            command.Parameters.AddWithValue("@id", user.Id);
+
+            int rowsAffected = command.ExecuteNonQuery();
+
+            return rowsAffected > 0;
+        }
+
+        public bool Delete(int id)
+        {
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            string query = "DELETE FROM Users WHERE Id = @id";
+
+            using SqliteCommand command = new SqliteCommand(query, connection);
+
+            command.Parameters.AddWithValue("@id", id);
+
+            int rowsAffected = command.ExecuteNonQuery();
+
+            return rowsAffected > 0;
+        }
     }
 }
