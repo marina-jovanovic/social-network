@@ -2,6 +2,7 @@
 using SocialNetwork.Models;
 using Microsoft.Data.Sqlite;
 using SocialNetwork.Repositories;
+using Microsoft.Extensions.Configuration;
 
 [ApiController]
 [Route("users")]
@@ -11,12 +12,12 @@ public class UsersController : ControllerBase
     private readonly UserDbRepository _dbRepo;
 
 
-    public UsersController()
+    public UsersController(IConfiguration configuration)
     {
         _repo = new UserRepository();
         _repo.Load();
 
-        _dbRepo = new UserDbRepository();
+        _dbRepo = new UserDbRepository(configuration);
     }
 
     [HttpGet]
@@ -26,11 +27,6 @@ public class UsersController : ControllerBase
         {
             var users = _dbRepo.GetAll();
             return Ok(users);
-        }
-        catch (SqliteException ex)
-        {
-            Console.WriteLine("SQLite error: " + ex.Message);
-            return StatusCode(500, "Database error");
         }
         catch (Exception ex)
         {
@@ -46,13 +42,8 @@ public class UsersController : ControllerBase
         {
             var user = _dbRepo.GetById(id);
 
-            if (user == null) return NotFound();
+            if (user == null) return NotFound($"User with the requested ID {id} was not found in the database.");
             return Ok(user);
-        }
-        catch (SqliteException ex)
-        {
-            Console.WriteLine($"SQLite error fetching user {id}: " + ex.Message);
-            return StatusCode(500, "Database error");
         }
         catch (Exception ex)
         {
@@ -108,7 +99,7 @@ public class UsersController : ControllerBase
 
             if (!deleted)
             {
-                return NotFound();
+                return NotFound("User with the requested ID was not found in the database.");
             }
             return NoContent();
         }
