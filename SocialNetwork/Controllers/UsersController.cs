@@ -21,17 +21,30 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAllUsers()
+    public IActionResult GetAllUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
+        if (page < 1 || pageSize < 1)
+        {
+            return BadRequest("Page and pageSize must be positive integers.");
+        }
+
+
         try
         {
-            var users = _dbRepo.GetAll();
-            return Ok(users);
+            List<User> users = _dbRepo.GetPaged(page, pageSize);
+            int totalCount = _dbRepo.CountAll();
+
+            Object result = new
+            {
+                Data = users,
+                TotalCount = totalCount
+            };
+            return Ok(result);
         }
         catch (Exception ex)
         {
-            Console.WriteLine("General error: " + ex.Message);
-            return StatusCode(500, "Internal server error");
+            Console.WriteLine($"Error fetching paged users: {ex.Message}");
+            return Problem("An error occurred while fetching paged users.");
         }
     }
 

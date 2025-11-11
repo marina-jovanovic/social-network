@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <Content Include="database\database.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
